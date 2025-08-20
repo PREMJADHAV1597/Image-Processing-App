@@ -70,8 +70,11 @@ if uploaded_file is not None:
         
         # Preprocess image for MobileNetV2
         img = cv2.resize(img_array, (224, 224))
-        img = tf.keras.applications.mobilenet_v2.preprocess_input(img)
-        img = np.expand_dims(img, axis=0)
+        if img.shape[-1] == 1:  # grayscale
+            img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
+        elif img.shape[-1] == 4:  # RGBA
+            img = cv2.cvtColor(img, cv2.COLOR_RGBA2RGB)
+        
         
         # Make prediction
         predictions = model.predict(img)
