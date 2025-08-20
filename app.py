@@ -35,18 +35,15 @@ with st.sidebar:
 def load_model(model_type):
     """Load appropriate model based on selection"""
     if model_type == "Image Classification":
-        # Replace with your classification model
+        # MobileNetV2 pretrained on ImageNet
         model = tf.keras.applications.MobileNetV2(weights='imagenet')
         return model
     elif model_type == "Object Detection":
-        # Placeholder for object detection model
-        return None
+        return None  # placeholder
     elif model_type == "Semantic Segmentation":
-        # Placeholder for segmentation model
-        return None
+        return None  # placeholder
     elif model_type == "Style Transfer":
-        # Placeholder for style transfer model
-        return None
+        return None  # placeholder
 
 # Image upload section
 uploaded_file = st.file_uploader(
@@ -70,12 +67,20 @@ if uploaded_file is not None:
         
         # Preprocess image for MobileNetV2
         img = cv2.resize(img_array, (224, 224))
-        if img.shape[-1] == 1:  # grayscale
+
+        # Ensure 3 channels (RGB)
+        if len(img.shape) == 2:  # grayscale
             img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
         elif img.shape[-1] == 4:  # RGBA
             img = cv2.cvtColor(img, cv2.COLOR_RGBA2RGB)
-        
-        
+
+        # Preprocess for MobileNetV2
+        img = tf.keras.applications.mobilenet_v2.preprocess_input(img)
+        img = np.expand_dims(img, axis=0)  # shape = (1, 224, 224, 3)
+
+        # Debug
+        st.write("DEBUG - final input shape:", img.shape)
+
         # Make prediction
         predictions = model.predict(img)
         decoded_predictions = tf.keras.applications.mobilenet_v2.decode_predictions(predictions, top=5)
